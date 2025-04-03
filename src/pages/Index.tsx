@@ -1,24 +1,31 @@
 
-import MainLayout from "@/components/layout/MainLayout";
+import { useState } from "react";
+import StratumLayout from "@/components/StratumLayout";
+import TopBar from "@/components/TopBar";
+import Sidebar from "@/components/Sidebar";
+import AppSidebar from "@/components/AppSidebar";
+import { StratumProvider } from "@/contexts/StratumContext";
 
 const Index = () => {
+  const [appSidebarOpen, setAppSidebarOpen] = useState(false);
+  const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
+
   return (
-    <MainLayout>
-      <div className="max-w-3xl mx-auto">
-        <div className="rounded-lg border shadow-sm p-8 bg-white">
-          <h2 className="text-2xl font-bold mb-4">Welcome to Your Project</h2>
-          <p className="text-gray-600 mb-6">
-            This is a clean starter template for your new application. You can customize
-            it to fit your needs and start building your features right away.
-          </p>
-          <div className="flex justify-center">
-            <div className="w-full max-w-md p-8 rounded-lg bg-gray-50 text-center">
-              <p className="text-gray-500 text-sm">Content area ready for your project</p>
-            </div>
-          </div>
+    <StratumProvider>
+      <div className="h-screen w-full flex flex-col bg-background">
+        <TopBar 
+          onToggleSidebar={() => setAppSidebarOpen(!appSidebarOpen)} 
+          onToggleAIAssistant={() => setAiSidebarOpen(!aiSidebarOpen)}
+        />
+        <div className="flex flex-1 overflow-hidden">
+          <main className="flex-1 relative overflow-hidden">
+            <StratumLayout />
+          </main>
+          <Sidebar isOpen={aiSidebarOpen} onClose={() => setAiSidebarOpen(false)} />
         </div>
+        <AppSidebar isOpen={appSidebarOpen} onClose={() => setAppSidebarOpen(false)} />
       </div>
-    </MainLayout>
+    </StratumProvider>
   );
 };
 
