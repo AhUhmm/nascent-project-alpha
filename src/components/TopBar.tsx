@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import {
   SearchIcon,
   Columns4,
   RefreshCw,
+  Bot,
 } from "lucide-react";
 import StratumCatalog from "@/components/StratumCatalog";
 
@@ -135,18 +137,7 @@ const TopBar = ({ onToggleSidebar, onToggleAIAssistant }: TopBarProps) => {
           onClick={onToggleAIAssistant}
           className="text-muted-foreground hover:text-foreground h-8 w-8"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+          <Bot className="h-5 w-5" />
         </Button>
       </div>
 

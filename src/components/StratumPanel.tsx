@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useStratum, Stratum, StratumTab, StratumLayout } from "@/contexts/StratumContext";
@@ -82,6 +83,12 @@ const StratumPanel = ({ stratum, isActive }: StratumPanelProps) => {
 
   // Determine if we should show the expand/shrink button
   const showExpandShrinkButton = strata.length > 1;
+
+  // Get enabled tabs
+  const enabledTabs = [] as StratumTab[];
+  if (stratum.tabs.map.enabled) enabledTabs.push("map");
+  if (stratum.tabs.graphs.enabled) enabledTabs.push("graphs");
+  if (stratum.tabs.index.enabled) enabledTabs.push("index");
 
   return (
     <div 
@@ -196,17 +203,17 @@ const StratumPanel = ({ stratum, isActive }: StratumPanelProps) => {
           </TabsList>
           
           <div className="flex-1 p-2">
-            {stratum.activeTab === "map" && (
+            {stratum.activeTab === "map" && stratum.tabs.map.enabled && (
               <TabsContent value="map" className="h-full m-0 mt-0 data-[state=active]:h-full">
                 <StratumMap stratum={stratum} />
               </TabsContent>
             )}
-            {stratum.activeTab === "graphs" && (
+            {stratum.activeTab === "graphs" && stratum.tabs.graphs.enabled && (
               <TabsContent value="graphs" className="h-full m-0 mt-0 data-[state=active]:h-full">
                 <StratumGraphs stratum={stratum} />
               </TabsContent>
             )}
-            {stratum.activeTab === "index" && (
+            {stratum.activeTab === "index" && stratum.tabs.index.enabled && (
               <TabsContent value="index" className="h-full m-0 mt-0 data-[state=active]:h-full">
                 <StratumIndex stratum={stratum} />
               </TabsContent>

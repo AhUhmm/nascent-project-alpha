@@ -59,7 +59,19 @@ type StratumContextType = {
   previousViewMode: ViewMode | null;
   locationLocked: boolean;
   setViewMode: (mode: ViewMode) => void;
-  addStratum: () => void;
+  addStratum: (options?: {
+    name?: string;
+    enabledTabs?: {
+      map?: boolean;
+      graphs?: boolean;
+      index?: boolean;
+    };
+    location?: {
+      name: string;
+      coordinates: [number, number];
+    };
+    description?: string;
+  }) => void;
   removeStratum: (id: string) => void;
   setActiveStratum: (id: string | null) => void;
   updateStratum: (id: string, updates: Partial<Stratum>) => void;
@@ -82,12 +94,59 @@ const defaultLayers: MapLayer[] = [
 ];
 
 // Default stratum
-const createDefaultStratum = (id: string, index: number): Stratum => ({
+const createDefaultStratum = (id: string, index: number, options?: {
+  name?: string;
+  enabledTabs?: {
+    map?: boolean;
+    graphs?: boolean;
+    index?: boolean;
+  };
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
+  description?: string;
+}): Stratum => ({
   id,
-  name: `Stratum ${index + 1}`,
-  location: {
+  name: options?.name || `Stratum ${index + 1}`,
+  location: options?.location || {
     name: "New York",
     coordinates: [-74.006, 40.7128],
+  },
+  activeTab: options?.enabledTabs?.map === false 
+    ? (options?.enabledTabs?.graphs === false ? "index" : "graphs") 
+    : "map",
+  layout: "tabs",
+  isExpanded: false,
+  tabs: {
+    map: {
+      enabled: options?.enabledTabs?.map !== false,
+      layers: [...defaultLayers],
+    },
+    graphs: {
+      enabled: options?.enabledTabs?.graphs !== false,
+      data: [],
+    },
+    index: {
+      enabled: options?.enabledTabs?.index !== false,
+      value: 72,
+      description: options?.description || "Overall performance index based on multiple factors",
+      components: [
+        { name: "Environmental", value: 65, weight: 0.3 },
+        { name: "Economic", value: 78, weight: 0.4 },
+        { name: "Social", value: 70, weight: 0.3 },
+      ],
+    },
+  },
+});
+
+// Create the Climate Impact Assessment stratum as initial default
+const createClimateImpactStratum = (): Stratum => ({
+  id: "stratum-1",
+  name: "Climate Impact Assessment",
+  location: {
+    name: "Seattle",
+    coordinates: [-122.3321, 47.6062],
   },
   activeTab: "map",
   layout: "tabs",
@@ -103,12 +162,12 @@ const createDefaultStratum = (id: string, index: number): Stratum => ({
     },
     index: {
       enabled: true,
-      value: 72,
-      description: "Overall performance index based on multiple factors",
+      value: 68,
+      description: "Comprehensive assessment of climate change impacts on local ecosystems, with projections for future scenarios and adaptation strategies.",
       components: [
-        { name: "Environmental", value: 65, weight: 0.3 },
-        { name: "Economic", value: 78, weight: 0.4 },
-        { name: "Social", value: 70, weight: 0.3 },
+        { name: "Vulnerability", value: 72, weight: 0.4 },
+        { name: "Adaptation", value: 65, weight: 0.3 },
+        { name: "Mitigation", value: 67, weight: 0.3 },
       ],
     },
   },
@@ -120,7 +179,7 @@ const StratumContext = createContext<StratumContextType | undefined>(undefined);
 // Context provider
 export const StratumProvider = ({ children }: { children: ReactNode }) => {
   const [strata, setStrata] = useState<Stratum[]>([
-    createDefaultStratum("stratum-1", 0),
+    createClimateImpactStratum(), // Use Climate Impact Assessment as the initial stratum
   ]);
   const [activeStratumId, setActiveStratumId] = useState<string | null>("stratum-1");
   const [viewMode, setViewMode] = useState<ViewMode>("single");
@@ -128,13 +187,25 @@ export const StratumProvider = ({ children }: { children: ReactNode }) => {
   const [locationLocked, setLocationLocked] = useState<boolean>(false);
 
   // Add a new stratum
-  const addStratum = () => {
+  const addStratum = (options?: {
+    name?: string;
+    enabledTabs?: {
+      map?: boolean;
+      graphs?: boolean;
+      index?: boolean;
+    };
+    location?: {
+      name: string;
+      coordinates: [number, number];
+    };
+    description?: string;
+  }) => {
     if (strata.length >= 4) return; // Maximum 4 strata
     
-    const newStratum = createDefaultStratum(`stratum-${strata.length + 1}`, strata.length);
+    const newStratum = createDefaultStratum(`stratum-${strata.length + 1}`, strata.length, options);
     
     // If location is locked, sync the new stratum's location with others
-    if (locationLocked && strata.length > 0) {
+    if (locationLocked && strata.length > 0 && !options?.location) {
       newStratum.location = {...strata[0].location};
     }
     

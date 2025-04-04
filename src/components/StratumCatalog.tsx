@@ -172,6 +172,30 @@ const StratumCatalog = ({ isOpen, onClose }: StratumCatalogProps) => {
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [showItemInfo, setShowItemInfo] = useState(false);
 
+  // Reset the state when dialog closes/opens
+  useEffect(() => {
+    if (!isOpen) {
+      // Small delay to prevent visual flickering during transition
+      const timeout = setTimeout(() => {
+        resetCatalogState();
+      }, 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  // Function to reset the catalog state
+  const resetCatalogState = () => {
+    setSelectedItem(null);
+    setShowItemInfo(false);
+    setSearchTerm("");
+    setActiveFilter("all");
+    setShowAdvancedFilters(false);
+    setSelectedInstitutions([]);
+    setSelectedTags([]);
+    setSortOption("newest");
+    setViewMode("grid");
+  };
+
   // Get unique institutions from the mock data
   const uniqueInstitutions = Array.from(new Set(mockStratumItems.map(item => item.institution)));
   
@@ -251,8 +275,29 @@ const StratumCatalog = ({ isOpen, onClose }: StratumCatalogProps) => {
       return;
     }
     
-    addStratum();
-    onClose();
+    // Add the stratum with name and enabled tabs from the selected item
+    if (selectedItem) {
+      addStratum({
+        name: selectedItem.title,
+        enabledTabs: {
+          map: selectedItem.contents.includes("map"),
+          graphs: selectedItem.contents.includes("graphs"),
+          index: selectedItem.contents.includes("index"),
+        },
+        location: {
+          name: selectedItem.location.name,
+          coordinates: selectedItem.location.coordinates
+        },
+        description: selectedItem.description
+      });
+      
+      onClose();
+      // Reset state after adding
+      resetCatalogState();
+    } else {
+      addStratum(); // Use defaults if no item is selected
+      onClose();
+    }
   };
 
   // This function resets the view to the catalog browser
@@ -296,17 +341,14 @@ const StratumCatalog = ({ isOpen, onClose }: StratumCatalogProps) => {
       onOpenChange={(open) => {
         if (!open) {
           onClose();
-        } else {
-          // When reopening, always reset to the catalog view
-          resetView();
+          // Reset on close
+          resetCatalogState();
         }
       }}
     >
       <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        
         <div className="flex flex-col flex-1 overflow-hidden">
           {selectedItem && showItemInfo ? (
-            
             <div className="h-full">
               <StratumInfoPanel 
                 stratum={{
@@ -347,7 +389,6 @@ const StratumCatalog = ({ isOpen, onClose }: StratumCatalogProps) => {
               />
             </div>
           ) : selectedItem ? (
-            
             <div className="flex flex-col h-full overflow-auto">
               <Button 
                 variant="ghost" 
@@ -758,7 +799,24 @@ const StratumCatalog = ({ isOpen, onClose }: StratumCatalogProps) => {
                           <Button 
                             size="sm" 
                             variant="default" 
-                            onClick={handleAddStratum} 
+                            onClick={() => {
+                              handleSelectItem(item);
+                              addStratum({
+                                name: item.title,
+                                enabledTabs: {
+                                  map: item.contents.includes("map"),
+                                  graphs: item.contents.includes("graphs"),
+                                  index: item.contents.includes("index"),
+                                },
+                                location: {
+                                  name: item.location.name,
+                                  coordinates: item.location.coordinates
+                                },
+                                description: item.description
+                              });
+                              onClose();
+                              resetCatalogState();
+                            }}
                             disabled={strata.length >= 4}
                           >
                             Add
@@ -810,8 +868,24 @@ const StratumCatalog = ({ isOpen, onClose }: StratumCatalogProps) => {
                           </Button>
                           <Button 
                             size="sm" 
-                            variant="default" 
-                            onClick={handleAddStratum}
+                            variant="default"
+                            onClick={() => {
+                              addStratum({
+                                name: item.title,
+                                enabledTabs: {
+                                  map: item.contents.includes("map"),
+                                  graphs: item.contents.includes("graphs"),
+                                  index: item.contents.includes("index"),
+                                },
+                                location: {
+                                  name: item.location.name,
+                                  coordinates: item.location.coordinates
+                                },
+                                description: item.description
+                              });
+                              onClose();
+                              resetCatalogState();
+                            }}
                             disabled={strata.length >= 4}
                           >
                             Add
